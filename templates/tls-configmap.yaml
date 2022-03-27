@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tls-configmap
+data:
+  cert.pem: {{ .Values.tls.httpCertificate }}
+  cert.key: {{ .Values.tls.httpCertificateKey }}
+  root.pem: {{ .Values.tls.rootCertificateChain }}
