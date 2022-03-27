@@ -47,7 +47,8 @@ spec:
           - name: vcd-data
             mountPath: /opt/vmware
           - name: vcd-scripts-vol
-            mountPath: /vcd-scripts-dir
+            mountPath: /vcd-scripts-dir/run-vcd.sh
+            subPath: run-vcd.sh
           - name: tls-certs-vol
             mountPath: /tls-certs-dir
           - name: vcd-transfer
@@ -73,8 +74,8 @@ spec:
           name: tls-configmap
       - name: vcd-transfer
         nfs:
-          server: 10.92.124.20
-          path: /mnt/nvme/vcd-k8s
+          server: {{ .Values.vcdNfs.server }}
+          path: {{ .Values.vcdNfs.mountPath }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

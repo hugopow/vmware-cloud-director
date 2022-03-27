@@ -50,14 +50,23 @@ data:
 
     sleep 5
 
-    # Configure VCD
+    {{- if .Values.installFirstCell.enabled }}
+    # Configure VCD on first Cell
     echo "Configure VCD"
     /opt/vmware/vcloud-director/bin/configure -ip $ip4 --primary-port-https {{ .Values.httpsService.port }} -cons $ip4 \
     --console-proxy-port-https {{ .Values.consoleProxyService.port }} -dbtype postgres -dbhost {{ .Values.postgresql.dbHost }} -dbname {{ .Values.postgresql.dbName }} \
     -dbuser {{ .Values.postgresql.dbUser }} -dbpassword {{ .Values.postgresql.dbPassword }} --cert /opt/vmware/cert.pem --key /opt/vmware/cert.key \
     --key-password "" --enable-ceip false -unattended
-
     sleep 5
+    {{- end }}
+
+    {{- if .Values.installAdditionalCell.enabled }}
+    # Configure VCD on an additional cell
+    echo "Configure VCD"
+    /opt/vmware/vcloud-director/bin/configure -ip $ip4 --primary-port-https {{ .Values.httpsService.port }} -cons $ip4 \
+    --console-proxy-port-https {{ .Values.consoleProxyService.port }} -r /opt/vmware/vcloud-director/data/transfer/responses.properties --enable-ceip false -unattended
+    sleep 5
+    {{- end }}
 
     # Start VCD services
     echo "Start VCD Services"
@@ -67,6 +76,7 @@ data:
     echo "Waiting for VCD services to start for 2.5 minutes"
     sleep 150
 
+    {{- if .Values.installFirstCell.enabled }}
     # Configure VCD System
     echo "Configure VCD System"
     /opt/vmware/vcloud-director/bin/cell-management-tool system-setup \
@@ -81,6 +91,11 @@ data:
     ./cell-management-tool manage-config -n restapi.baseUri -v "{{ .Values.publicAddress.restapiBaseUri }}"
     ./cell-management-tool manage-config -n restapi.baseHttpUri -v "{{ .Values.publicAddress.restapiBaseHttpUri }}"
     ./cell-management-tool manage-config -n consoleproxy.external.address -v "{{ .Values.publicAddress.consoleProxy }}:{{ .Values.consoleProxyService.port }}"
+
+    # Copy responses.properties file to NFS share
+    echo "Copy responses.properties file to NFS share"
+    cp /opt/vmware/vcloud-director/etc/responses.properties /opt/vmware/vcloud-director/data/transfer/
+    {{- end }}
 
     # Show VCD logs
     echo "Tailing logs"

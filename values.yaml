@@ -4,8 +4,18 @@
 
 replicaCount: 1
 
+installFirstCell:
+  enabled: true
+
+installAdditionalCell:
+  enabled: false
+
 storageClass: iscsi
-pvcCapacity: 10Gi
+pvcCapacity: 2Gi
+
+vcdNfs:
+  server: 10.92.124.20
+  mountPath: /mnt/nvme/vcd-k8s
 
 vcdSystem:
   user: administrator
