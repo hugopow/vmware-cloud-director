@@ -27,35 +27,84 @@ spec:
       serviceAccountName: {{ include "vmware-cloud-director.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      initContainers:
+      - name: init-myservice
+        image: busybox:1.28
+        command: ['sh', '-c', 'mkdir -p /opt/vmware; echo>/opt/vmware/test.txt']
+        volumeMounts:
+        - name: vcd-data
+          mountPath: /opt/vmware
+      terminationGracePeriodSeconds: 10
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: ["/bin/sh"]
+          args: ["/vcd-scripts-dir/run-vcd.sh"]
+          volumeMounts:
+          - name: vcd-data
+            mountPath: /opt/vmware
+          - name: vcd-scripts-vol
+            mountPath: /vcd-scripts-dir
+          - name: tls-certs-vol
+            mountPath: /tls-certs-dir
           ports:
-            - name: http
-              containerPort: 80
+            - name: https
+              containerPort: 443
+              protocol: TCP
+            - name: console-proxy
+              containerPort: 8443
               protocol: TCP
           livenessProbe:
             httpGet:
-              path: /
-              port: http
+              path: /cloud/server_status
+              port: https
           readinessProbe:
             httpGet:
-              path: /
-              port: http
+              path: /cloud/server_status
+              port: https
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
+      volumes:
+      - name: vcd-data
+        persistentVolumeClaim:
+         claimName: {{ include "vmware-cloud-director.fullname" . }}
+      - name: vcd-scripts-vol
+        configMap:
+          name: scripts-configmap
+      - name: tls-certs-vol
+        configMap:
+          name: tls-configmap
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.affinity }}
+      {{- if .Values.availabilityZones.enabled }}
       affinity:
-        {{- toYaml . | nindent 8 }}
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: topology.csi.vmware.com/k8s-zone
+                operator: In
+                values:
+                - az-1
+                - az-2
+                - az-3
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app
+                operator: In
+                values:
+                - {{ .Chart.Name }}
+            topologyKey: topology.csi.vmware.com/k8s-zone
       {{- end }}
       {{- with .Values.tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+
