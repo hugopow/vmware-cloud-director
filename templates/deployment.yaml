@@ -57,14 +57,6 @@ spec:
             - name: console-proxy
               containerPort: 8443
               protocol: TCP
-          livenessProbe:
-            httpGet:
-              path: /cloud/server_status
-              port: https
-          readinessProbe:
-            httpGet:
-              path: /cloud/server_status
-              port: https
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       volumes:

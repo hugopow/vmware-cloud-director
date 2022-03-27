@@ -19,47 +19,62 @@ data:
     yum install alsa-lib bash chkconfig coreutils findutils glibc grep initscripts krb5-libs libgcc libICE libSM libstdc++ libX11 libXau libXdmcp libXext libXi libXt libXtst module-init-tools net-tools pciutils procps redhat-lsb sed tar wget which -y --allowerasing
 
     # Install VMware public keys
+    echo "Install VMware public keys"
     cd /home
     wget https://packages.vmware.com/tools/keys/VMWARE-PACKAGING-GPG-RSA-KEY.pub
     rpm --import /home/VMWARE-PACKAGING-GPG-RSA-KEY.pub
 
     # Make VCD package executable
+    echo "Make VCD package executable"
     chmod u+x /home/vmware-vcloud-director-distribution-10.3.2-19375095.bin
 
     # Prepare TLS certificates, must be in PEM format
-
-    # Prepare certificate chain
-
+    echo "Prepare TLS certificates"
     cp /tls-certs-dir/cert.pem /opt/vmware/cert.pem
     cp /tls-certs-dir/cert.key /opt/vmware/cert.key
 
     # Install VCD
+    echo "Install VCD"
     cd /home
     cat << EOF | ./vmware-vcloud-director-distribution-10.3.2-19375095.bin
     n
     EOF
 
+    sleep 5
+
     # Get IP address of pod to use when configuring VCD
+    echo "Get IP address of pod to use when configuring VCD"
     ip4=$(/sbin/ip -o -4 addr list eth0 | awk '{print $4}' | cut -d/ -f1)
+    echo "The IP address is"
+    echo $ip4
+
+    sleep 5
 
     # Configure VCD
+    echo "Configure VCD"
     /opt/vmware/vcloud-director/bin/configure -ip $ip4 --primary-port-https 443 -cons $ip4 \
     --console-proxy-port-https 8443 -dbtype postgres -dbhost postgresql.vmware-cloud-director.svc.cluster.local -dbname vcloud \
     -dbuser vcloud -dbpassword Vmware1! --cert /opt/vmware/cert.pem --key /opt/vmware/cert.key \
     --key-password "" --enable-ceip false -unattended
 
+    sleep 5
+
     # Start VCD services
+    echo "Start VCD Services"
     service vmware-vcd start
 
     # Wait for VCD to start
+    echo "Waiting for VCD services to start for 240 seconds"
     sleep 240
 
     # Configure VCD System
+    echo "Configure VCD System"
     /opt/vmware/vcloud-director/bin/cell-management-tool system-setup \
     --user administrator --password  'Vmware1!' --full-name "VCD System Administrator" \
     --system-name VCD --installation-id 1 --unattended
 
     # Setup VCD Public Addresses
+    echo "Setup VCD Public Addresses"
     cd /opt/vmware/vcloud-director/bin
     ./cell-management-tool manage-config -n ui.baseUri -v "https://vcd-k8s.vmwire.com"
     ./cell-management-tool manage-config -n ui.baseHttpUri -v "http://vcd-k8s.vmwire.com"
@@ -68,5 +83,6 @@ data:
     ./cell-management-tool manage-config -n consoleproxy.external.address -v "vcd-vmrc.vmwire.com:8443"
 
     # Show VCD logs
+    echo "Tailing logs"
     tail -f /opt/vmware/vcloud-director/logs/cell.log -f /opt/vmware/vcloud-director/logs/vcloud-container-debug.log
 

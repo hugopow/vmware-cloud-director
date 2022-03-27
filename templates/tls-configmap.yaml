@@ -3,6 +3,5 @@ kind: ConfigMap
 metadata:
   name: tls-configmap
 data:
-  cert.pem: {{ .Values.tls.httpCertificate }}
-  cert.key: {{ .Values.tls.httpCertificateKey }}
-  root.pem: {{ .Values.tls.rootCertificateChain }}
+{{ (.Files.Glob "tls/cert.pem").AsConfig | indent 2 }}
+{{ (.Files.Glob "tls/cert.key").AsConfig | indent 2 }}
