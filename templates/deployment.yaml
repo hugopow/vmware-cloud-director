@@ -50,6 +50,8 @@ spec:
             mountPath: /vcd-scripts-dir
           - name: tls-certs-vol
             mountPath: /tls-certs-dir
+          - name: vcd-transfer
+            mountPath: /opt/vmware/vcloud-director/data/transfer
           ports:
             - name: https
               containerPort: 443
@@ -69,6 +71,10 @@ spec:
       - name: tls-certs-vol
         configMap:
           name: tls-configmap
+      - name: vcd-transfer
+        nfs:
+          server: 10.92.124.20
+          path: /mnt/nvme/vcd-k8s
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
