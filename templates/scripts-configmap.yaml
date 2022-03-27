@@ -52,9 +52,9 @@ data:
 
     # Configure VCD
     echo "Configure VCD"
-    /opt/vmware/vcloud-director/bin/configure -ip $ip4 --primary-port-https 443 -cons $ip4 \
-    --console-proxy-port-https 8443 -dbtype postgres -dbhost postgresql.vmware-cloud-director.svc.cluster.local -dbname vcloud \
-    -dbuser vcloud -dbpassword Vmware1! --cert /opt/vmware/cert.pem --key /opt/vmware/cert.key \
+    /opt/vmware/vcloud-director/bin/configure -ip $ip4 --primary-port-https {{ .Values.httpsService.port }} -cons $ip4 \
+    --console-proxy-port-https {{ .Values.consoleProxyService.port }} -dbtype postgres -dbhost {{ .Values.postgresql.dbHost }} -dbname {{ .Values.postgresql.dbName }} \
+    -dbuser {{ .Values.postgresql.dbUser }} -dbpassword {{ .Values.postgresql.dbPassword }} --cert /opt/vmware/cert.pem --key /opt/vmware/cert.key \
     --key-password "" --enable-ceip false -unattended
 
     sleep 5
@@ -70,19 +70,18 @@ data:
     # Configure VCD System
     echo "Configure VCD System"
     /opt/vmware/vcloud-director/bin/cell-management-tool system-setup \
-    --user administrator --password  'Vmware1!' --full-name "VCD System Administrator" \
-    --email admin@domain.local -system-name VCD --installation-id 1 --unattended
+    --user {{ .Values.vcdSystem.user }} --password  '{{ .Values.vcdSystem.password }}' --full-name "VCD System Administrator" \
+    --email {{ .Values.vcdSystem.email }} -system-name {{ .Values.vcdSystem.systemName }} --installation-id {{ .Values.vcdSystem.installationId }} --unattended
 
     # Setup VCD Public Addresses
     echo "Setup VCD Public Addresses"
     cd /opt/vmware/vcloud-director/bin
-    ./cell-management-tool manage-config -n ui.baseUri -v "https://vcd-k8s.vmwire.com"
-    ./cell-management-tool manage-config -n ui.baseHttpUri -v "http://vcd-k8s.vmwire.com"
-    ./cell-management-tool manage-config -n restapi.baseUri -v "https://vcd-k8s.vmwire.com"
-    ./cell-management-tool manage-config -n restapi.baseHttpUri -v "http://vcd-k8s.vmwire.com"
-    ./cell-management-tool manage-config -n consoleproxy.external.address -v "vcd-vmrc.vmwire.com:8443"
+    ./cell-management-tool manage-config -n ui.baseUri -v "{{ .Values.publicAddress.uiBaseUri }}"
+    ./cell-management-tool manage-config -n ui.baseHttpUri -v "{{ .Values.publicAddress.uiBaseHttpUri }}"
+    ./cell-management-tool manage-config -n restapi.baseUri -v "{{ .Values.publicAddress.restapiBaseUri }}"
+    ./cell-management-tool manage-config -n restapi.baseHttpUri -v "{{ .Values.publicAddress.restapiBaseHttpUri }}"
+    ./cell-management-tool manage-config -n consoleproxy.external.address -v "{{ .Values.publicAddress.consoleProxy }}:{{ .Values.consoleProxyService.port }}"
 
     # Show VCD logs
     echo "Tailing logs"
     tail -f /opt/vmware/vcloud-director/logs/cell.log -f /opt/vmware/vcloud-director/logs/vcloud-container-debug.log
-

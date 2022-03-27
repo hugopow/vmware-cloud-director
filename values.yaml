@@ -7,6 +7,19 @@ replicaCount: 1
 storageClass: iscsi
 pvcCapacity: 10Gi
 
+vcdSystem:
+  user: administrator
+  password: Vmware1!
+  email: admin@domain.local
+  systemName: VCD
+  installationId: 1
+
+postgresql:
+  dbHost: postgresql.vmware-cloud-director.svc.cluster.local
+  dbName: vcloud
+  dbUser: vcloud
+  dbPassword: Vmware1!
+
 # Availability zones in deployment.yaml are setup for TKG and must match VsphereFailureDomain and VsphereDeploymentZones
 availabilityZones:
   enabled: false
@@ -49,6 +62,13 @@ httpsService:
 
 consoleProxyService:
   port: 8443
+
+publicAddress:
+  uiBaseUri: https://vcd-k8s.vmwire.com
+  uiBaseHttpUri: http://vcd-k8s.vmwire.com
+  restapiBaseUri: https://vcd-k8s.vmwire.com
+  restapiBaseHttpUri: http://vcd-k8s.vmwire.com
+  consoleProxy: vcd-vmrc.vmwire.com
 
 ingress:
   enabled: false
