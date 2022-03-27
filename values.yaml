@@ -5,10 +5,10 @@
 replicaCount: 1
 
 installFirstCell:
-  enabled: true
+  enabled: false
 
 installAdditionalCell:
-  enabled: false
+  enabled: true
 
 storageClass: iscsi
 pvcCapacity: 2Gi

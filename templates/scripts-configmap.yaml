@@ -28,10 +28,12 @@ data:
     echo "Make VCD package executable"
     chmod u+x /home/vmware-vcloud-director-distribution-10.3.2-19375095.bin
 
+    {{- if .Values.installFirstCell.enabled }}
     # Prepare TLS certificates, must be in PEM format
     echo "Prepare TLS certificates"
     cp /tls-certs-dir/cert.pem /opt/vmware/cert.pem
     cp /tls-certs-dir/cert.key /opt/vmware/cert.key
+    {{- end }}
 
     # Install VCD
     echo "Install VCD"

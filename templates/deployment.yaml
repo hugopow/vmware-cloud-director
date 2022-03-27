@@ -49,8 +49,10 @@ spec:
           - name: vcd-scripts-vol
             mountPath: /vcd-scripts-dir/run-vcd.sh
             subPath: run-vcd.sh
+          {{- if not .Values.installAdditionalCell.enabled }}
           - name: tls-certs-vol
             mountPath: /tls-certs-dir
+          {{- end }}
           - name: vcd-transfer
             mountPath: /opt/vmware/vcloud-director/data/transfer
           ports:
@@ -69,9 +71,11 @@ spec:
       - name: vcd-scripts-vol
         configMap:
           name: scripts-configmap
+      {{- if not .Values.installAdditionalCell.enabled }}
       - name: tls-certs-vol
         configMap:
           name: tls-configmap
+      {{- end }}
       - name: vcd-transfer
         nfs:
           server: {{ .Values.vcdNfs.server }}
