@@ -64,14 +64,14 @@ data:
     service vmware-vcd start
 
     # Wait for VCD to start
-    echo "Waiting for VCD services to start for 240 seconds"
-    sleep 240
+    echo "Waiting for VCD services to start for 2.5 minutes"
+    sleep 150
 
     # Configure VCD System
     echo "Configure VCD System"
     /opt/vmware/vcloud-director/bin/cell-management-tool system-setup \
     --user administrator --password  'Vmware1!' --full-name "VCD System Administrator" \
-    ---email admin@domain.local -system-name VCD --installation-id 1 --unattended
+    --email admin@domain.local -system-name VCD --installation-id 1 --unattended
 
     # Setup VCD Public Addresses
     echo "Setup VCD Public Addresses"
