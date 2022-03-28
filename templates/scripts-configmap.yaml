@@ -28,13 +28,6 @@ data:
     echo "Make VCD package executable"
     chmod u+x /home/vmware-vcloud-director-distribution-10.3.2-19375095.bin
 
-    {{- if .Values.installFirstCell.enabled }}
-    # Prepare TLS certificates, must be in PEM format
-    echo "Prepare TLS certificates"
-    cp /tls-certs-dir/cert.pem /opt/vmware/cert.pem
-    cp /tls-certs-dir/cert.key /opt/vmware/cert.key
-    {{- end }}
-
     # Install VCD
     echo "Install VCD"
     cd /home
@@ -43,6 +36,13 @@ data:
     EOF
 
     sleep 5
+
+    {{- if .Values.installFirstCell.enabled }}
+    # Prepare TLS certificates, must be in PEM format
+    echo "Prepare TLS certificates"
+    cp /tls-certs-dir/cert.pem /opt/vmware/vcloud-director/data/transfer/cert.pem
+    cp /tls-certs-dir/cert.key /opt/vmware/vcloud-director/data/transfer/cert.key
+    {{- end }}
 
     # Get IP address of pod to use when configuring VCD
     echo "Get IP address of pod to use when configuring VCD"
@@ -57,7 +57,7 @@ data:
     echo "Configure VCD"
     /opt/vmware/vcloud-director/bin/configure -ip $ip4 --primary-port-https {{ .Values.httpsService.port }} -cons $ip4 \
     --console-proxy-port-https {{ .Values.consoleProxyService.port }} -dbtype postgres -dbhost {{ .Values.postgresql.dbHost }} -dbname {{ .Values.postgresql.dbName }} \
-    -dbuser {{ .Values.postgresql.dbUser }} -dbpassword {{ .Values.postgresql.dbPassword }} --cert /opt/vmware/cert.pem --key /opt/vmware/cert.key \
+    -dbuser {{ .Values.postgresql.dbUser }} -dbpassword {{ .Values.postgresql.dbPassword }} --cert /opt/vmware/vcloud-director/data/transfer/cert.pem --key /opt/vmware/vcloud-director/data/transfer/cert.key \
     --key-password "" --enable-ceip false -unattended
     sleep 5
     {{- end }}
@@ -97,6 +97,9 @@ data:
     # Copy responses.properties file to NFS share
     echo "Copy responses.properties file to NFS share"
     cp /opt/vmware/vcloud-director/etc/responses.properties /opt/vmware/vcloud-director/data/transfer/
+    # Change file permisssions for responses.properties
+    echo "Change file permisssions for responses.properties"
+    chmod 775 /opt/vmware/vcloud-director/data/transfer/responses.properties
     {{- end }}
 
     # Show VCD logs

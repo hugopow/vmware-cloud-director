@@ -1,0 +1,119 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "vmware-cloud-director.fullname" . }}
+  labels:
+    {{- include "vmware-cloud-director.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "vmware-cloud-director.selectorLabels" . | nindent 6 }}
+  serviceName: {{ include "vmware-cloud-director.fullname" . }}
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "vmware-cloud-director.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "vmware-cloud-director.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      {{- if .Values.availabilityZones.enabled }}
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: topology.csi.vmware.com/k8s-zone
+                operator: In
+                values:
+                - az-1
+                - az-2
+                - az-3
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app
+                operator: In
+                values:
+                - {{ .Chart.Name }}
+            topologyKey: topology.csi.vmware.com/k8s-zone
+      {{- end }}
+      initContainers:
+      - name: init-myservice
+        image: busybox:1.28
+        command: ['sh', '-c', 'mkdir -p /opt/vmware; echo>/opt/vmware/test.txt']
+        volumeMounts:
+        - name: vcd-data
+          mountPath: /opt/vmware
+      terminationGracePeriodSeconds: 10
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: ["/bin/sh"]
+          args: ["/vcd-scripts-dir/run-vcd.sh"]
+          volumeMounts:
+          - name: vcd-data
+            mountPath: /opt/vmware
+          - name: vcd-scripts-vol
+            mountPath: /vcd-scripts-dir/run-vcd.sh
+            subPath: run-vcd.sh
+          {{- if not .Values.installAdditionalCell.enabled }}
+          - name: tls-certs-vol
+            mountPath: /tls-certs-dir
+          {{- end }}
+          - name: vcd-transfer
+            mountPath: /opt/vmware/vcloud-director/data/transfer
+          ports:
+            - name: https
+              containerPort: 443
+              protocol: TCP
+            - name: console-proxy
+              containerPort: 8443
+              protocol: TCP
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+      - name: vcd-scripts-vol
+        configMap:
+          name: scripts-configmap
+      {{- if not .Values.installAdditionalCell.enabled }}
+      - name: tls-certs-vol
+        configMap:
+          name: tls-configmap
+      {{- end }}
+      - name: vcd-transfer
+        nfs:
+          server: {{ .Values.vcdNfs.server }}
+          path: {{ .Values.vcdNfs.mountPath }}
+  volumeClaimTemplates:
+      - metadata:
+          name: vcd-data
+        spec:
+          accessModes: [ "ReadWriteOnce" ]
+          storageClassName: {{ .Values.storageClass }}
+          resources:
+            requests:
+              storage: {{ .Values.pvcCapacity }}
