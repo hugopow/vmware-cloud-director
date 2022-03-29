@@ -41,7 +41,7 @@ data:
     # Prepare TLS certificates, must be in PEM format
     echo "Prepare TLS certificates"
     cp /tls-certs-dir/cert.pem /opt/vmware/vcloud-director/data/transfer/cert.pem
-    cp /tls-certs-dir/cert.key /opt/vmware/vcloud-director/data/transfer/cert.key
+    cp /tls-key-dir/cert.key /opt/vmware/vcloud-director/data/transfer/cert.key
     {{- end }}
 
     # Get IP address of pod to use when configuring VCD
@@ -54,7 +54,7 @@ data:
 
     {{- if .Values.installFirstCell.enabled }}
     # Configure VCD on first Cell
-    echo "Configure VCD"
+    echo "Configure VCD System"
     /opt/vmware/vcloud-director/bin/configure -ip $ip4 --primary-port-https {{ .Values.httpsService.port }} -cons $ip4 \
     --console-proxy-port-https {{ .Values.consoleProxyService.port }} -dbtype postgres -dbhost {{ .Values.postgresql.dbHost }} -dbname {{ .Values.postgresql.dbName }} \
     -dbuser {{ .Values.postgresql.dbUser }} -dbpassword {{ .Values.postgresql.dbPassword }} --cert /opt/vmware/vcloud-director/data/transfer/cert.pem --key /opt/vmware/vcloud-director/data/transfer/cert.key \
