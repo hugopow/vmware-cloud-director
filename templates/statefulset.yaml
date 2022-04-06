@@ -50,13 +50,6 @@ spec:
                 - {{ .Chart.Name }}
             topologyKey: topology.csi.vmware.com/k8s-zone
       {{- end }}
-      initContainers:
-      - name: init-myservice
-        image: busybox:1.28
-        command: ['sh', '-c', 'mkdir -p /opt/vmware; echo>/opt/vmware/test.txt']
-        volumeMounts:
-        - name: vcd-data
-          mountPath: /opt/vmware
       terminationGracePeriodSeconds: 10
       containers:
         - name: {{ .Chart.Name }}
@@ -67,8 +60,6 @@ spec:
           command: ["/bin/sh"]
           args: ["/vcd-scripts-dir/run-vcd.sh"]
           volumeMounts:
-          - name: vcd-data
-            mountPath: /opt/vmware
           - name: vcd-scripts-vol
             mountPath: /vcd-scripts-dir/run-vcd.sh
             subPath: run-vcd.sh
@@ -111,12 +102,3 @@ spec:
         nfs:
           server: {{ .Values.vcdNfs.server }}
           path: {{ .Values.vcdNfs.mountPath }}
-  volumeClaimTemplates:
-      - metadata:
-          name: vcd-data
-        spec:
-          accessModes: [ "ReadWriteOnce" ]
-          storageClassName: {{ .Values.storageClass }}
-          resources:
-            requests:
-              storage: {{ .Values.pvcCapacity }}

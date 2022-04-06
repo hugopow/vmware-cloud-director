@@ -75,8 +75,8 @@ data:
     service vmware-vcd start
 
     # Wait for VCD to start
-    echo "Waiting for VCD services to start for 2.5 minutes"
-    sleep 150
+    echo "Waiting for VCD services to start for 100 seconds"
+    sleep 100
 
     {{- if .Values.installFirstCell.enabled }}
     # Configure VCD System

@@ -10,8 +10,8 @@ installFirstCell:
 installAdditionalCell:
   enabled: false
 
-storageClass: iscsi
-pvcCapacity: 2Gi
+#storageClass: iscsi
+#pvcCapacity: 1Gi
 
 vcdNfs:
   server: 10.92.124.20
@@ -29,6 +29,56 @@ postgresql:
   dbName: vcloud
   dbUser: vcloud
   dbPassword: Vmware1!
+
+# Availability zones in deployment.yaml are setup for TKG and must match VsphereFailureDomain and VsphereDeploymentZones
+availabilityZones:
+  enabled: false
+
+httpsService:
+  type: LoadBalancer
+  port: 443
+
+consoleProxyService:
+  port: 8443
+
+publicAddress:
+  uiBaseUri: https://vcd-k8s.vmwire.com
+  uiBaseHttpUri: http://vcd-k8s.vmwire.com
+  restapiBaseUri: https://vcd-k8s.vmwire.com
+  restapiBaseHttpUri: http://vcd-k8s.vmwire.com
+  consoleProxy: vcd-vmrc.vmwire.com
+
+image:
+  repository: harbor.vmwire.com/library/centos-vcd
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: "latest"
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
 
 tls:
   certFullChain: |-
@@ -152,56 +202,6 @@ tls:
     tgKKaVGG842wlcWaXVw/TU+ckuI/E8Apow4SlexOK8uj5du3P3v/rLrpqkbM0QQU
     ihiOIfvNikaYUcgQVxpNDvs=
     -----END PRIVATE KEY-----
-
-# Availability zones in deployment.yaml are setup for TKG and must match VsphereFailureDomain and VsphereDeploymentZones
-availabilityZones:
-  enabled: false
-
-image:
-  repository: harbor.vmwire.com/library/centos-vcd
-  pullPolicy: IfNotPresent
-  # Overrides the image tag whose default is the chart appVersion.
-  tag: "latest"
-
-imagePullSecrets: []
-nameOverride: ""
-fullnameOverride: ""
-
-serviceAccount:
-  # Specifies whether a service account should be created
-  create: true
-  # Annotations to add to the service account
-  annotations: {}
-  # The name of the service account to use.
-  # If not set and create is true, a name is generated using the fullname template
-  name: ""
-
-podAnnotations: {}
-
-podSecurityContext: {}
-  # fsGroup: 2000
-
-securityContext: {}
-  # capabilities:
-  #   drop:
-  #   - ALL
-  # readOnlyRootFilesystem: true
-  # runAsNonRoot: true
-  # runAsUser: 1000
-
-httpsService:
-  type: LoadBalancer
-  port: 443
-
-consoleProxyService:
-  port: 8443
-
-publicAddress:
-  uiBaseUri: https://vcd-k8s.vmwire.com
-  uiBaseHttpUri: http://vcd-k8s.vmwire.com
-  restapiBaseUri: https://vcd-k8s.vmwire.com
-  restapiBaseHttpUri: http://vcd-k8s.vmwire.com
-  consoleProxy: vcd-vmrc.vmwire.com
 
 ingress:
   enabled: false
