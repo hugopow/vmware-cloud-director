@@ -8,21 +8,41 @@ data:
     # Script to run VMware Cloud Director as a container, use at your own risk, no support is given.
 
     # Update repositories
-    cd /etc/yum.repos.d/
-    sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-*
-    sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-*
+    #cd /etc/yum.repos.d/
+    #sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-*
+    #sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-*
 
     # Update CentOS
-    yum update -y
+    #yum update -y
 
     # Install VCD pre-requisite packages
-    yum install alsa-lib bash chkconfig coreutils findutils glibc grep initscripts krb5-libs libgcc libICE libSM libstdc++ libX11 libXau libXdmcp libXext libXi libXt libXtst module-init-tools net-tools pciutils procps redhat-lsb sed tar wget which -y --allowerasing
+    #yum install alsa-lib bash chkconfig coreutils findutils glibc grep initscripts krb5-libs libgcc libICE libSM libstdc++ libX11 libXau libXdmcp libXext libXi libXt libXtst module-init-tools net-tools pciutils procps redhat-lsb sed tar wget which -y --allowerasing
 
     # Install VMware public keys
-    echo "Install VMware public keys"
-    cd /home
-    wget https://packages.vmware.com/tools/keys/VMWARE-PACKAGING-GPG-RSA-KEY.pub
-    rpm --import /home/VMWARE-PACKAGING-GPG-RSA-KEY.pub
+    #echo "Install VMware public keys"
+    #cd /home
+    #wget https://packages.vmware.com/tools/keys/VMWARE-PACKAGING-GPG-RSA-KEY.pub
+    #rpm --import /home/VMWARE-PACKAGING-GPG-RSA-KEY.pub
+    
+    # Install nodejs and git to use vmw-cli with my.vmware.com
+    #echo "Install nodejs and git to use vmw-cli with my.vmware.com"
+    #dnf module install nodejs:14 -y
+    #yum install -y git
+    #
+    # Install vmw-sdk
+    #npm install https://github.com/hugopow/vmw-sdk.git --global
+    
+    # Instal vmw-cli
+    #npm install https://github.com/hugopow/vmw-cli.git --global
+
+    # Export my.vmware.com credentials for vmw-cli to use
+    #export VMWUSER='{{ .Values.myVmware.vmwUser }}'
+    #export VMWPASS='{{ .Values.myVmware.vmwPass }}'
+
+    # Download VMware Cloud Director Linux Binary
+    #vmw-cli ls vmware_cloud_director
+    #echo "Download vmware-vcloud-director-distribution-10.3.2-19375095.bin"
+    #vmw-cli cp vmware-vcloud-director-distribution-10.3.2-19375095.bin
 
     # Make VCD package executable
     echo "Make VCD package executable"
@@ -42,6 +62,8 @@ data:
     echo "Prepare TLS certificates"
     cp /tls-certs-dir/cert.pem /opt/vmware/vcloud-director/data/transfer/cert.pem
     cp /tls-key-dir/cert.key /opt/vmware/vcloud-director/data/transfer/cert.key
+    chown vcloud:vcloud /opt/vmware/vcloud-director/data/transfer/cert.pem
+    chown vcloud:vcloud /opt/vmware/vcloud-director/data/transfer/cert.key
     {{- end }}
 
     # Get IP address of pod to use when configuring VCD
@@ -99,6 +121,7 @@ data:
     cp /opt/vmware/vcloud-director/etc/responses.properties /opt/vmware/vcloud-director/data/transfer/
     # Change file permisssions for responses.properties
     echo "Change file permisssions for responses.properties"
+    chown vcloud:vcloud /opt/vmware/vcloud-director/data/transfer/responses.properties
     chmod 775 /opt/vmware/vcloud-director/data/transfer/responses.properties
     {{- end }}
 

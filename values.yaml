@@ -5,17 +5,18 @@
 replicaCount: 1
 
 installFirstCell:
-  enabled: true
-
-installAdditionalCell:
   enabled: false
 
-#storageClass: iscsi
-#pvcCapacity: 1Gi
+installAdditionalCell:
+  enabled: true
+
+myVmware:
+  vmwUser: 
+  vmwPass: 
 
 vcdNfs:
   server: 10.92.124.20
-  mountPath: /mnt/nvme/vcd-k8s
+  mountPath: /mnt/nvme/vcd-transfer
 
 vcdSystem:
   user: administrator
@@ -25,14 +26,14 @@ vcdSystem:
   installationId: 1
 
 postgresql:
-  dbHost: postgresql.vmware-cloud-director.svc.cluster.local
+  dbHost: postgresql-primary.vmware-cloud-director.svc.cluster.local
   dbName: vcloud
   dbUser: vcloud
   dbPassword: Vmware1!
 
 # Availability zones in deployment.yaml are setup for TKG and must match VsphereFailureDomain and VsphereDeploymentZones
 availabilityZones:
-  enabled: false
+  enabled: true
 
 httpsService:
   type: LoadBalancer
@@ -83,34 +84,34 @@ securityContext: {}
 tls:
   certFullChain: |-
     -----BEGIN CERTIFICATE-----
-    MIIFHTCCBAWgAwIBAgISBIJysUrRaovnCD2Yml3AbkUFMA0GCSqGSIb3DQEBCwUA
+    MIIFHjCCBAagAwIBAgISA/qXqri17rdZrdj3qOySAq1nMA0GCSqGSIb3DQEBCwUA
     MDIxCzAJBgNVBAYTAlVTMRYwFAYDVQQKEw1MZXQncyBFbmNyeXB0MQswCQYDVQQD
-    EwJSMzAeFw0yMjAxMDMxMzMzMzRaFw0yMjA0MDMxMzMzMzNaMBcxFTATBgNVBAMM
-    DCoudm13aXJlLmNvbTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBALr6
-    awanLTejnnCYs2yTKBDi06z35/S0/puulh5ouVjmxDD8MuHVINxNolNhGLNI686H
-    bKk5M8pxBQav2Lt1wm2F1ovMQZzMd6nddgUzX4Ceu9XtJxJRkU5FAar3spPCiUip
-    Nl14PKIYl2xqV9qh2HrRgGPB6TmRtgPXVzwWMHh0Ih+9nmMs7iNhZKgF3PvS8Yfy
-    FVcwtGkpas17O2zlPKx7UGUFEnmmn90E36QqwnB3r8ahzcGNrrEkPX2hDo2bbL3e
-    KERqRXXV+IevMHGvCZLxeyebXJYWGi0Nr4K6YtprD/e2WV6juhaJejU5tdupvjKW
-    I15jOLBFGaVbpYjnVG0CAwEAAaOCAkYwggJCMA4GA1UdDwEB/wQEAwIFoDAdBgNV
+    EwJSMzAeFw0yMjA0MDIxMzA0MjRaFw0yMjA3MDExMzA0MjNaMBcxFTATBgNVBAMM
+    DCoudm13aXJlLmNvbTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBALrh
+    bLhPIEc9W59kwStxAjDyrLIL0GFfaG/z4VCY75lJg1fgExXKy5MqBFX0Cjksb/n+
+    7yDvuV4ulVtkHr0K1tLCu1x9jYQMdT9SjY+8SAFvwBd1VL0IcdZQKMOxqupXkKSF
+    bMnLB2t4yMRHJFh7Uk7McYUI3NlP/FXgfoSC9C5i8at3eEIbkEndAyTfvcvwJlaV
+    AobFxZiItUTWGuAq91ptJ6xAGsY8/OD2ZBXB4MLOW6Q6wC8iinj5TVExo6NOote2
+    j7deVbY7u+WU8Xq1A9HnUVEDtKe0RDnpmO4XswpZQyy5IGUNiw/A2q6nWCA5/2Jt
+    1FVicyuSrUigH/gqyJ8CAwEAAaOCAkcwggJDMA4GA1UdDwEB/wQEAwIFoDAdBgNV
     HSUEFjAUBggrBgEFBQcDAQYIKwYBBQUHAwIwDAYDVR0TAQH/BAIwADAdBgNVHQ4E
-    FgQUeE+7jf25OD4jjbkShfCutj5Wp6EwHwYDVR0jBBgwFoAUFC6zF7dYVsuuUAlA
+    FgQUbxPB4J0HBXhCqi0mjCYc5ObMGiYwHwYDVR0jBBgwFoAUFC6zF7dYVsuuUAlA
     5h+vnYsUwsYwVQYIKwYBBQUHAQEESTBHMCEGCCsGAQUFBzABhhVodHRwOi8vcjMu
     by5sZW5jci5vcmcwIgYIKwYBBQUHMAKGFmh0dHA6Ly9yMy5pLmxlbmNyLm9yZy8w
     FwYDVR0RBBAwDoIMKi52bXdpcmUuY29tMEwGA1UdIARFMEMwCAYGZ4EMAQIBMDcG
     CysGAQQBgt8TAQEBMCgwJgYIKwYBBQUHAgEWGmh0dHA6Ly9jcHMubGV0c2VuY3J5
-    cHQub3JnMIIBAwYKKwYBBAHWeQIEAgSB9ASB8QDvAHYA36Veq2iCTx9sre64X04+
-    WurNohKkal6OOxLAIERcKnMAAAF+IFwbNAAABAMARzBFAiEA78anStClKBHbuLW+
-    D9oIbrzGf0o+YJNyVXGnRhjGjJACICuvhKL4u4+ppex4/xBFzgzraRfn2MxUoCMn
-    EVfFBrLGAHUAKXm+8J45OSHwVnOfY6V35b5XfZxgCvj5TV0mXCVdx4QAAAF+IFwb
-    MQAABAMARjBEAiB0fNvilCgcMWFaSIUOEP6tmsa9UdcMmhqyHFfQb5LQ6AIgGIzu
-    jDZz0sj8GeOeVz+kPxsZKfcpRFs0VLVv9w5GYQ4wDQYJKoZIhvcNAQELBQADggEB
-    AKylgBrlypQNJlq0EQicYfWDI3oktEN+UL4Wihk9A6oWSS7fBdOEPtj3tnQ48d/n
-    t8o8Ts3XJt3tBZ/Hn6IeBkhz4SZviorewOj+qY9e8mTXCwODhKPPlKqGRJjEvKOb
-    A8jbW8wtc0m5WJYcE6epGbXfmLM5eWMer/fAcZGsL1CriOvxkpIXBypIgpbZpKM9
-    r4z+S8jiJoVNZu9h4NGFclcVldg/JoYFECoGoJzOFc51h00wHmv5a4Rt9UVezkYB
-    dF0HrNhZd8+fhBGXw29gmap8aoAiUlAvw1PYwU8jU+O+SQlEXgkZV67VPC1OqaJM
-    d43kMDHIRT85BeD5st5OoM4=
+    cHQub3JnMIIBBAYKKwYBBAHWeQIEAgSB9QSB8gDwAHYAQcjKsd8iRkoQxqE6CUKH
+    Xk4xixsD6+tLx2jwkGKWBvYAAAF/6pdjogAABAMARzBFAiB+aQGJqkkxcNHfRvNd
+    UPBi3f643RetxTVA1gJtDteKBQIhAIu9BpX8UGVA0MbNukYce6WoT/QdGRjkFwLq
+    fKpp+v6BAHYAKXm+8J45OSHwVnOfY6V35b5XfZxgCvj5TV0mXCVdx4QAAAF/6pdj
+    iwAABAMARzBFAiEAmp8cl75cFRH8SYulKtkml6OyUKz1PD9L3Q2LDo3FTYgCIFz7
+    4DD5Zi2+83TKmgY8L78CiafVsqXVUh6Qslr+MVrjMA0GCSqGSIb3DQEBCwUAA4IB
+    AQCy8YoIDCeOmJ8Fg1hQe3nX881OeXNDP3SjD2+/sRZV3wuyu6ud4A30sm0Soe3F
+    35zhhOafrNMCB8y97ruTjcSv7LkFzOLszvEgZZKlXfb27Dc/K/F63sv0riZhbjKs
+    eJSy176h0LlX14YqNwNLcRSdC/77x2Z8aSUljzaKVgEARfAhnkkV4XraK04rD9kP
+    +NpP66EDFNsHOt5U8cdPliAfSIBKXoegkM3Z2sIKwmJK+K0hM+ftLikonEEGmoAV
+    1R7HwaUKKBpCjt5pWQMjVJ5ntACTzFrzGSNvrZrhdZbKimGgSD3u0VixgU+exSuq
+    DD9KTfFJtOJA7dRhcidifqi+
     -----END CERTIFICATE-----
     -----BEGIN CERTIFICATE-----
     MIIFFjCCAv6gAwIBAgIRAJErCErPDBinU/bWLiWnX1owDQYJKoZIhvcNAQELBQAw
@@ -175,7 +176,6 @@ tls:
     -----END CERTIFICATE-----
   certKey: |-
     
-
 ingress:
   enabled: false
   className: ""
@@ -216,5 +216,3 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
-
-
