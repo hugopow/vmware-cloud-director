@@ -11,9 +11,5 @@ spec:
       targetPort: https
       protocol: TCP
       name: https
-    - port: {{ .Values.consoleProxyService.port }}
-      targetPort: 8443
-      protocol: TCP
-      name: console-proxy
   selector:
     {{- include "vmware-cloud-director.selectorLabels" . | nindent 4 }}
